@@ -1,13 +1,10 @@
 (ns deposit-update-message-handler.core
     (:gen-class)
-  
-    ; (:require [clj-kafka.consumer.simple :refer :all])
+
     (:require [clj-kafka.consumer.zk :refer :all])
     (:require [clj-kafka.producer :refer :all])
     (:require [clj-kafka.core :refer :all])
-
   )
-
 
 (def producer-config {"metadata.broker.list" "localhost:9092"
                   "serializer.class" "kafka.serializer.DefaultEncoder"
@@ -19,9 +16,6 @@
              "auto.offset.reset" "smallest"
              "auto.commit.enable" "false"})
 
-  
-(def p (producer producer-config))
-
 (defn process "Some fake processing"
   [input]
   (str "PROCESSED - " input))
@@ -30,6 +24,8 @@
   [& args]
   (prn "Starting")
 
+  (let [p (producer producer-config)] 
+  
   (with-resource [c (consumer consumer-config)]
     shutdown
   
@@ -41,4 +37,4 @@
         (send-message p (message "status-update" (.getBytes processed-value)))
     )
   ))
-)
+))
