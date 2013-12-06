@@ -5,9 +5,8 @@
                  [clj-kafka "0.1.1-0.8-beta1"]
                  [zookeeper-clj "0.9.3"]
                  
+                 [org.clojure/data.zip "0.1.1"]
                  
-                 
-                 [zookeeper-clj "0.9.3"]
                  [org.clojure/data.json "0.2.2"]
                  
                  ;; kafka and its related deps
