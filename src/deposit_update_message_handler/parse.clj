@@ -7,10 +7,63 @@
             [clojure.xml :as xml]                                                                                                                                         
             [clojure.pprint :refer [pprint]]) 
   
-  (:require [clojure.string :refer :all])
-
-  
+  (:require [clojure.string :refer [trim]]) 
 )
+
+; http://help.crossref.org/#suberrors
+; http://help.crossref.org/#ID5768
+(def error-type-identifiers
+  {
+   "MalformedXmlException" :malformed-xml
+   
+   ; Added with conflict
+   "Added with conflict" :added-with-conflict
+   
+   ; Record not processed because submitted version: xxxxxxx is less or equal to previously submitted version (DOI match) 
+   "Record not processed because submitted version" :submission-version
+   
+   ; User with ID: {0} cant submit into handle, please contact the CrossRef admin
+   "submit into handle" :permission
+   
+   ; User not allowed to add records for prefix: {0}
+   "User not allowed to add records for prefix" :permission
+   
+   ; All prefixes in a submission must match (DOI[{0}]) 
+   "All prefixes in a submission must match" :xml-structure
+   
+   ; year: {0} in not a valid integer
+   "in not a valid integer" :xml-content
+   
+   ; title "{title}" was previously deleted by a CrossRef admin
+   "was previously deleted by a CrossRef" :title-deleted-by-crossref-admin
+   
+   ; user not allowed to add or update records for the title "{title}"
+   "user not allowed to add or update records for the title" :permission
+   
+   ; ISSN "12345678" has already been assigned to a different title/publisher/genre
+   "has already been assigned to a different" :permission
+   
+   ; [error] :286:24:Invalid content starting with element {element name}'. The content must match '(("http://www.crossref.org/schema/4.3.0": item_number) {0-3}, ("http://www.crossref.org/schema/4.3.0": identifier) {0-10})
+   "Invalid content starting with element" :xml-error
+   
+   ; org.jdom.input.JDOMParseException: Error on line 312 of document file:///export/home/resin/journals/crossref/inprocess/395032106: The content of elements must consist of well-formed character data or markup.
+   "JDOMParseException" :xml-error
+   
+   ; [fatal error] :1:1: Content is not allowed in prolog.
+   "Content is not allowed in prolog" :xml-error
+   
+   ; java.io.UTFDataFormatException: invalid byte 1 of 1-byte > UTF-8 sequence (0x92) 
+   "UTFDataFormatException" :xml-error
+   
+   ; java.sql.SQLException: ORA-00001: unique constraint (ATYPON.NDX1_CIT_RELS) violated
+   "ATYPON.NDX1_CIT_RELS" :unique-doi
+   
+   ; java.lang.NullPointerException
+   "NullPointerException" :npe
+   
+   ; Submission version NULL is invalid 
+   "Submission version NULL is invalid" :xml-error
+})
 
 (defn parse-int-or-zero
   "Parse an integer from a string or return zero if nil"
@@ -18,17 +71,40 @@
   (if (nil? s) 0
    (Integer. (re-find  #"\d+" s ))))
 
+(defn status
+  [input]
+  (case (-> (first input) :attrs :status)
+    "Success" :success
+    "Failure" :failure
+    "Warning" :warning))
 
+(defn extract-types-from-message
+  "Extract identifiers from message text."
+  [message]
+  
+  (defn message-contains [needle] (>= (.indexOf message needle) 0))
+  
+  (defn append-if-contains [acc [identifier-string, identifier-symbol]]
+    (if (message-contains identifier-string)  
+      (conj acc identifier-symbol)
+      acc
+    )
+  )
+      
+  (reduce append-if-contains #{} error-type-identifiers))
 
 (defn extract-record-info 
   "Extract information from a record_diagnostic tag."
   [record]
-  { 
-   :success (= (-> (first record) :attrs :status) "Success")
-   :doi (z/xml1-> record :doi z/text)
-   :message (trim (z/xml1-> record :msg z/text))
-    }
-  )
+  (let [message (trim (z/xml1-> record :msg z/text))]
+    { 
+     :status (status record) 
+     :doi (z/xml1-> record :doi z/text)
+     :message message
+     :message-types (extract-types-from-message message)
+    }))
+
+
 
 (defn parse-xml
   "Parse a message's XML content"
