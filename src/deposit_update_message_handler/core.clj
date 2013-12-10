@@ -1,9 +1,12 @@
 (ns deposit-update-message-handler.core
     (:gen-class)
-
+    (:require [deposit-update-message-handler.mail :refer :all]
+              [deposit-update-message-handler.parse :refer :all])
     (:require [clj-kafka.consumer.zk :refer :all])
     (:require [clj-kafka.producer :refer :all])
     (:require [clj-kafka.core :refer :all])
+    
+    
   )
 
 (def producer-config {"metadata.broker.list" "localhost:9092"
@@ -20,8 +23,8 @@
   [input]
   (str "PROCESSED - " input))
 
-(defn -main
-  [& args]
+(defn poll-bus
+  []
   (prn "Starting")
 
   (let [p (producer producer-config)] 
@@ -34,7 +37,29 @@
       (let [value (apply str (map char (:value incoming-message)))
             processed-value (process value)]
         (prn ">>>" value)
-        (send-message p (message "status-update" (.getBytes processed-value)))
-    )
-  ))
-))
+        (send-message p (message "status-update" (.getBytes processed-value))))))))
+
+
+(defn poll-email
+  []
+  
+  (defn process [message]
+    (let [response (parse-xml-robust message)]
+      ; For now, just print it. In future, update the State store.
+      (prn "ORIGINAL")
+      (prn message)
+      (prn "PARSE")
+      (prn response)
+      (prn "DONE PARSING")
+      
+      ; Return true if this was processed OK and we can delete the email.
+      (not (nil? response))))
+    
+   (fetch-mail process))
+
+(defn -main
+  [& args]
+  
+  (poll-email)
+  
+)

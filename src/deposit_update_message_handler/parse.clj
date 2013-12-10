@@ -6,8 +6,10 @@
             [clojure.zip :as zip]                                                     
             [clojure.xml :as xml]                                                                                                                                         
             [clojure.pprint :refer [pprint]]) 
+    
+  (:require [clojure.string :refer [trim]])
   
-  (:require [clojure.string :refer [trim]]) 
+  (:import org.xml.sax.SAXParseException)
 )
 
 ; http://help.crossref.org/#suberrors
@@ -107,9 +109,9 @@
 
 
 (defn parse-xml
-  "Parse a message's XML content"
+  "Parse a message's XML content. Raise SAXParseException."
   [input]
-  (let [
+    (let [
         x (xml/parse (java.io.ByteArrayInputStream. (.getBytes input)))
         zipped (zip/xml-zip x)
         submission-id (parse-int-or-zero (z/xml1-> zipped :submission_id z/text))
@@ -131,5 +133,13 @@
      :failure-count failure-count
      :records records-info
      }
-  )    
-)
+))
+
+
+(defn parse-xml-robust
+  "Parse a message's XML content. Return nil on error. This can be passed any kind of message that might appear in the mail account's inbox."
+  [input]
+  (try
+    (parse-xml (trim input))
+    (catch SAXParseException _ nil)
+    (catch NullPointerException _ nil)))

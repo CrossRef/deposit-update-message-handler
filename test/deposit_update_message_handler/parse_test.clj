@@ -550,3 +550,48 @@ Error: cvc-attribute.3: The value 'funding_identifier' of attribute 'name' on el
 
 (deftest n-test
   (testing (is (= (parse-xml n) ne))))
+
+(def bad-xml [
+  nil
+  ""
+  "/9j/4AAQSkZJRgABAQAAAQABAAD/4gxYSUNDX1BST0ZJTEUAAQEAAAxITGlubwIQAABtbnRyUkdC
+IFhZWiAHzgACAAkABgAxAABhY3NwTVNGVAAAAABJRUMgc1JHQgAAAAAAAAAAAAAAAAAA9tYAAQAA
+AADTLUhQICAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABFj
+cHJ0AAABUAAAADNkZXNjAAABhAAAAGx3dHB0AAAB8AAAABRia3B0AAACBAAAABRyWFlaAAACGAAA
+ABRnWFlaAAACLAAAABRiWFlaAAACQAAAABRkbW5kAAACVAAAAHBkbWRkAAACxAAAAIh2dWVkAAAD"
+  "<xml></html>"
+  "Open angle bracket question mark ex em ell version quote one point oh quote encoding equals quote you tee eff hyphen eight close quote question mark close angle bracket"
+])
+
+(deftest parse-xml-robust-returns-nil-on-bad
+  ; Fail nil rather than exception. 
+  (doseq [input bad-xml] (testing (is (= (parse-xml-robust input) nil)))))
+
+(def valid-but-spaced-out "                  \t\t\t\t\t       <?xml version=\"1.0\" encoding=\"UTF-8\"?>\t\t\t\t
+<doi_batch_diagnostic status=\"completed\" sp=\"cs3.crossref.org\">
+  <submission_id>1362802368</submission_id>
+  <batch_id>123456</batch_id>
+  <batch_data>
+     <record_count>0</record_count>\n\n\n\n\n
+     <success_count>0</success_count>
+     <warning_count>0</warning_count>
+     <failure_count>0</failure_count>
+  </batch_data>
+</doi_batch_diagnostic>
+       
+       
+       
+       
+       ")
+
+(def valid-but-spaced-out-e {:batch-id 123456
+         :submission-id 1362802368
+         :record-count 0
+         :success-count 0
+         :warning-count 0
+         :failure-count 0
+         :records []
+         })
+
+(deftest parse-xml-robust-trims-whitespace
+  (testing (is (= (parse-xml-robust valid-but-spaced-out) valid-but-spaced-out-e))))
