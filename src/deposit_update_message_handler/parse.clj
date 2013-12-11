@@ -142,4 +142,5 @@
   (try
     (parse-xml (trim input))
     (catch SAXParseException _ nil)
-    (catch NullPointerException _ nil)))
+    (catch NullPointerException _ nil))
+  )
