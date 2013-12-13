@@ -1,12 +1,15 @@
 (ns deposit-update-message-handler.core
     (:gen-class)
     (:require [deposit-update-message-handler.mail :refer :all]
-              [deposit-update-message-handler.parse :refer :all])
+              [deposit-update-message-handler.parse :refer :all]
+              [deposit-update-message-handler.storage :refer :all]
+              [deposit-update-message-handler.storage :refer [connect-mongo update-status]]
+              
+              )
     (:require [clj-kafka.consumer.zk :refer :all])
     (:require [clj-kafka.producer :refer :all])
-    (:require [clj-kafka.core :refer :all])
-    
-    
+    (:require [clj-kafka.core :refer [with-resource]]
+              [environ.core :refer [env]])
   )
 
 (def producer-config {"metadata.broker.list" "localhost:9092"
@@ -43,14 +46,14 @@
 (defn poll-email
   []
   
+  
   (defn process [message]
     (let [response (parse-xml-robust message)]
-      ; For now, just print it. In future, update the State store.
-      (prn "ORIGINAL")
-      (prn message)
-      (prn "PARSE")
-      (prn response)
-      (prn "DONE PARSING")
+
+            
+      (when (not (nil? response))
+        (update-status (:submission-id response) response)  
+      )
       
       ; Return true if this was processed OK and we can delete the email.
       (not (nil? response))))
@@ -59,7 +62,7 @@
 
 (defn -main
   [& args]
-  
-  (poll-email)
-  
+ 
+  (connect-mongo)
+  (poll-email)  
 )

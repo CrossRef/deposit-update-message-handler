@@ -1,5 +1,5 @@
 (ns deposit-update-message-handler.parse
-    (:gen-class)   
+
   
   
   (:require [clojure.data.zip.xml :as z]                                                                                                                            

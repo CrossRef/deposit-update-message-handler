@@ -8,7 +8,15 @@ Handle DOI deposit messages from the message bus.
 
 ## Options
 
-FIXME: listing of options this app accepts.
+Options set using environment variables. In your lein profile file include lein-environ plugin and set:
+
+    :env {
+        :mongo-db-name "crossref"
+        :email-username "labs-notifications"
+        :email-password ...              
+    }
+
+When running, ensure that these are set as MONGO_DB_NAME etc.
 
 ### Bugs
 
@@ -16,7 +24,7 @@ FIXME: listing of options this app accepts.
 
 ## TODO
 
-Config file
+Schedule
 
 ## License
 

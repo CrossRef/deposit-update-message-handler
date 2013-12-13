@@ -8,15 +8,18 @@
           javax.mail.Folder
           javax.mail.internet.MimeMultipart
           com.sun.mail.pop3.POP3Store
-          java.util.Properties
-))
+          java.util.Properties)
+ 
+ 
+(:require [environ.core :refer [env]])
+)
 
 ; Background reading http://www.oracle.com/technetwork/java/faq-135477.html
 (defn fetch-mail
   "Fetch a batch of messages. Call callback with the string of each message body. If the callback returns true, delete the message."
    [callback]  
   (let [properties (new Properties)
-        url (new URLName "pop3" "mailserv.crossref.org" 110 "" "USERNAME" "PASSWORD")
+        url (new URLName "pop3" "mailserv.crossref.org" 110 "" (env :email-username) (env :email-password))
         session (Session/getInstance properties nil)
         store (new POP3Store session url)]
         (.connect store)
