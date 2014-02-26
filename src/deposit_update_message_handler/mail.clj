@@ -1,18 +1,16 @@
 (ns deposit-update-message-handler.mail
     (:gen-class)
-
- (:import javax.mail.URLName
-          javax.mail.Session
-          javax.mail.Flags$Flag
-          javax.mail.Flags
-          javax.mail.Folder
-          javax.mail.internet.MimeMultipart
-          com.sun.mail.pop3.POP3Store
-          java.util.Properties)
+ (:import javax.mail.URLName)
+ (:import javax.mail.Session)
+ (:import javax.mail.Flags$Flag)
+ (:import javax.mail.Flags)
+ (:import javax.mail.Folder)
+ (:import javax.mail.internet.MimeMultipart)
+ (:import com.sun.mail.pop3.POP3Store)
+ (:import java.util.Properties)
+ (:use [clojure.tools.logging :only (info error)])
  
- 
-(:require [environ.core :refer [env]])
-)
+(:require [environ.core :refer [env]]))
 
 ; Background reading http://www.oracle.com/technetwork/java/faq-135477.html
 (defn fetch-mail
@@ -23,12 +21,12 @@
         session (Session/getInstance properties nil)
         store (new POP3Store session url)]
         (.connect store)
-        (prn "connected")
+        (info "Connected to mailbox")
         
         (let [folder (.getFolder store "INBOX")]
-          (prn "open...")
+          (info "Opening mailbox")
           (.open folder Folder/READ_WRITE)
-          (prn "opened")
+          (info "Done")
           (let [messages (.getMessages folder)]
             (doall (map (fn [message]
               (let [content (.getContent message)
@@ -37,33 +35,34 @@
                 ; The content might be a string for a simple message or a multi-part.
                 (if (instance? String content)
                   (do
-                    (prn "Simple message")
-                    (prn "Got subject:" subject)
-                    (prn "Got content" content)
-
-                    (if (callback content)
-                      (do
-                         (prn "Deleting" message)
-                         (.setFlag message Flags$Flag/SEEN true)
-                         (.setFlag message Flags$Flag/DELETED true)))))
+                    (info "Got simple message with subject" subject)
+                    
+                    (let [callback-status (callback content)]
+                      (info (if callback-status "Callback for at simple mail succeeded" "Callback did not succeed"))
+                      (if callback-status
+                        (do
+                           (info "Deleting simple message with subject" subject)
+                           (.setFlag message Flags$Flag/SEEN true)
+                           (.setFlag message Flags$Flag/DELETED true))))))
                 
                 (if (instance? MimeMultipart content)
                   (let [part-count (.getCount content)
+                        subject (.getSubject message)
                         parts (doall (map #(-> (.getBodyPart content %) .getContent .toString) (range 0 part-count)))
                         callback-result (doall (map #(callback (.toString %)) parts))
                         worked-for-at-least-one-part (not (every? false? callback-result))]
-                    (prn "Got subject:" subject)
-
+                    (info "Got multi-part message with subject" subject)
+                    (info (if worked-for-at-least-one-part "Callback for at least one part of multi-part succeeded" "Callback did not succeed"))
                     (if worked-for-at-least-one-part
                       (do
-                        (prn "Deleting")
+                        (info "Deleting multi-part message with subject" subject)
                         (.setFlag message Flags$Flag/SEEN true)
                         (.setFlag message Flags$Flag/DELETED true)))))))
                 messages))
 
     ; This will commit any message deletions if we want it to.
-    (prn "close folder")
+    (info "Closing mail")
     (.close folder true)
-    (prn "close store")
+    (info "Closing mail store")
     (.close store)          
-    (prn "done")))))
+    (info "Done mail job")))))

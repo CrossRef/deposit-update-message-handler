@@ -6,46 +6,16 @@
               [deposit-update-message-handler.storage :refer [connect-mongo update-status]]
               
               )
-    (:require [clj-kafka.consumer.zk :refer :all])
-    (:require [clj-kafka.producer :refer :all])
-    (:require [clj-kafka.core :refer [with-resource]]
-              [environ.core :refer [env]])
-  )
 
-(def producer-config {"metadata.broker.list" "localhost:9092"
-                  "serializer.class" "kafka.serializer.DefaultEncoder"
-                  "partitioner.class" "kafka.producer.DefaultPartitioner"})
-
-(def consumer-config {
-             "zookeeper.connect" "localhost:2181"
-             "group.id" "clj-kafka.consumer"
-             "auto.offset.reset" "smallest"
-             "auto.commit.enable" "false"})
-
-(defn process "Some fake processing"
-  [input]
-  (str "PROCESSED - " input))
-
-(defn poll-bus
-  []
-  (prn "Starting")
-
-  (let [p (producer producer-config)] 
-  
-  (with-resource [c (consumer consumer-config)]
-    shutdown
-  
-    ; Loop forever doing the processing and posting back.
-    (doseq [incoming-message (messages c ["incoming-email"])] 
-      (let [value (apply str (map char (:value incoming-message)))
-            processed-value (process value)]
-        (prn ">>>" value)
-        (send-message p (message "status-update" (.getBytes processed-value))))))))
-
+    (:require [clojurewerkz.quartzite.triggers :as qt]
+            [clojurewerkz.quartzite.jobs :as qj]
+            [clojurewerkz.quartzite.schedule.daily-interval :as daily]
+            [clojurewerkz.quartzite.schedule.calendar-interval :as cal])
+   (:use [clojurewerkz.quartzite.jobs :only [defjob]])
+   (:require [clojurewerkz.quartzite.scheduler :as qs]))
 
 (defn poll-email
   []
-  
   
   (defn process [message]
     (let [response (parse-xml-robust message)]
@@ -60,9 +30,23 @@
     
    (fetch-mail process))
 
+(defjob PollEmailJob
+  [ctx]
+  (poll-email))
+
 (defn -main
   [& args]
- 
+  (qs/initialize)
   (connect-mongo)
-  (poll-email)  
-)
+  
+  (qs/start)
+  
+  (let [job (qj/build
+              (qj/of-type PollEmailJob)
+              (qj/with-identity (qj/key "jobs.poll-email"))
+              )
+        trigger (qt/build
+                  (qt/with-identity (qt/key "triggers.poll-email"))
+                  (qt/start-now)
+                  (qt/with-schedule (cal/schedule (cal/with-interval-in-seconds 30))))]
+        (qs/schedule job trigger)))

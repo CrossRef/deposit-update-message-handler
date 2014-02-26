@@ -6,9 +6,11 @@ Handle DOI deposit messages from the message bus.
 
     $ java -jar deposit-update-message-handler-0.1.0-standalone.jar [args]
 
+    $ lein run
+
 ## Options
 
-Options set using environment variables. In your lein profile file include lein-environ plugin and set:
+Options set using environment variables. In your lein profile file or `./.lein-env` include lein-environ plugin and set:
 
     :env {
         :mongo-db-name "crossref"
@@ -24,9 +26,10 @@ When running, ensure that these are set as MONGO_DB_NAME etc.
 
 ## TODO
 
-Schedule
+ - Schedule
+ - Readme
 
 ## License
 
-Copyright © 2013 CrossRef
+Copyright © 2013-2014 CrossRef
 
