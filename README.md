@@ -12,6 +12,10 @@ or
 
     $ lein run
 
+or in production
+
+    $ lein daemon start deposit-update-message-handler
+
 Here is a sample run script you can keep on the server
 
     export MONGO_DB_NAME=crossref

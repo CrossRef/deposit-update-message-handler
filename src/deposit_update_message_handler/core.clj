@@ -12,15 +12,15 @@
             [clojurewerkz.quartzite.schedule.daily-interval :as daily]
             [clojurewerkz.quartzite.schedule.calendar-interval :as cal])
    (:use [clojurewerkz.quartzite.jobs :only [defjob]])
-   (:require [clojurewerkz.quartzite.scheduler :as qs]))
+   (:require [clojurewerkz.quartzite.scheduler :as qs])
+   (:use [clojure.tools.logging :only (info error)]))
 
 (defn poll-email
   []
   
   (defn process [message]
     (let [response (parse-xml-robust message)]
-
-            
+      (info "Schedule run")
       (when (not (nil? response))
         (update-status (:submission-id response) response)  
       )
@@ -37,10 +37,10 @@
 (defn -main
   [& args]
   (qs/initialize)
+  (info "Starting")
   (connect-mongo)
-  
+  (info "Start scheduler")
   (qs/start)
-  
   (let [job (qj/build
               (qj/of-type PollEmailJob)
               (qj/with-identity (qj/key "jobs.poll-email"))
@@ -50,3 +50,4 @@
                   (qt/start-now)
                   (qt/with-schedule (cal/schedule (cal/with-interval-in-seconds 30))))]
         (qs/schedule job trigger)))
+

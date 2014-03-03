@@ -1,12 +1,11 @@
 (defproject deposit-update-message-handler "0.1.0-SNAPSHOT"
   :description "Handle DOI deposit messages on the message queue"
-  :url "http://example.com/FIXME"
   :repositories [["java.net" "http://download.java.net/maven/2"]]
-  :plugins [[lein-environ "0.4.0"]]
+  :plugins [[lein-environ "0.4.0"] [lein-daemon "0.5.4"]]
   :dependencies [[org.clojure/clojure "1.5.1"]
                  [org.clojure/data.zip "0.1.1"]
                  [org.clojure/data.json "0.2.2"]
-                 [org.clojure/tools.logging "0.2.6"]
+                 [org.clojure/tools.logging "0.2.6"]                 
                 
                  ; Logging
                  [org.slf4j/slf4j-log4j12 "1.7.5"]
@@ -23,5 +22,5 @@
   :main ^:skip-aot deposit-update-message-handler.core
   :target-path "target/%s"
   :profiles {:uberjar {:aot :all}}
-  ; :resource-paths ["resources"]
+  :daemon {:deposit-update-message-handler {:ns deposit-update-message-handler.core :pidfile "deposit-update-message-handler.pid"}}
   )
