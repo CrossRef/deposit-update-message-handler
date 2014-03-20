@@ -1,6 +1,8 @@
 (ns deposit-update-message-handler.parse
-  (:require [clojure.data.zip.xml :as z]                                                                        [clojure.zip :as zip]                                                     
-            [clojure.xml :as xml]                                                                               [clojure.pprint :refer [pprint]]
+  (:require [clojure.data.zip.xml :as z]                                                                        
+            [clojure.zip :as zip]                                                     
+            [clojure.xml :as xml]      
+            [clojure.pprint :refer [pprint]]
             [clojure.string :refer [trim]])
   (:import [org.xml.sax SAXParseException]))
 
