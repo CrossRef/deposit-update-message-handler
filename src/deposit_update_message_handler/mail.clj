@@ -1,28 +1,22 @@
 (ns deposit-update-message-handler.mail
     (:gen-class)
- (:import javax.mail.URLName)
- (:import javax.mail.Session)
- (:import javax.mail.Flags$Flag)
- (:import javax.mail.Flags)
- (:import javax.mail.Folder)
- (:import javax.mail.internet.MimeMultipart)
- (:import com.sun.mail.pop3.POP3Store)
- (:import java.util.Properties)
- (:use [clojure.tools.logging :only (info error)])
- 
-(:require [environ.core :refer [env]]))
+    (:import [javax.mail URLName Session Flags$Flag Flags Folder]
+             [javax.mail.internet MimeMultipart]
+             [com.sun.mail.pop3 POP3Store]
+             [java.util Properties])
+    (:require [clojure.tools.logging :refer [info error]]
+              [environ.core :refer [env]]))
 
 ; Background reading http://www.oracle.com/technetwork/java/faq-135477.html
 (defn fetch-mail
   "Fetch a batch of messages. Call callback with the string of each message body. If the callback returns true, delete the message."
    [callback]  
-  (let [properties (new Properties)
-        url (new URLName "pop3" "mailserv.crossref.org" 110 "" (env :email-username) (env :email-password))
+  (let [properties (Properties.)
+        url (URLName. "pop3" "mailserv.crossref.org" 110 "" (env :email-username) (env :email-password))
         session (Session/getInstance properties nil)
-        store (new POP3Store session url)]
+        store (POP3Store. session url)]
         (.connect store)
         (info "Connected to mailbox")
-        
         (let [folder (.getFolder store "INBOX")]
           (info "Opening mailbox")
           (.open folder Folder/READ_WRITE)
@@ -38,7 +32,9 @@
                     (info "Got simple message with subject" subject)
                     
                     (let [callback-status (callback content)]
-                      (info (if callback-status "Callback for at simple mail succeeded" "Callback did not succeed"))
+                      (info (if callback-status 
+                              "Callback for at simple mail succeeded" 
+                              "Callback did not succeed"))
                       (if callback-status
                         (do
                            (info "Deleting simple message with subject" subject)
@@ -52,7 +48,9 @@
                         callback-result (doall (map #(callback (.toString %)) parts))
                         worked-for-at-least-one-part (not (every? false? callback-result))]
                     (info "Got multi-part message with subject" subject)
-                    (info (if worked-for-at-least-one-part "Callback for at least one part of multi-part succeeded" "Callback did not succeed"))
+                    (info (if worked-for-at-least-one-part 
+                            "Callback for at least one part of multi-part succeeded" 
+                            "Callback did not succeed"))
                     (if worked-for-at-least-one-part
                       (do
                         (info "Deleting multi-part message with subject" subject)
