@@ -16,7 +16,7 @@
   (let [response (parse-xml-robust message)]
     (info "Schedule run")
     (when (not (nil? response))
-      (update-status (:submission-id response) response))
+      (update-status (:batch-id response) response))
     ;; Return true if this was processed OK and we can delete the email.
     (not (nil? response))))
 
