@@ -9,55 +9,55 @@
 ; http://help.crossref.org/#suberrors
 ; http://help.crossref.org/#ID5768
 (def error-type-identifiers
-  {"MalformedXmlException" :malformed-xml
+  {"MalformedXmlException" :xml-syntax-malformed
    
    ;; Added with conflict
-   "Added with conflict" :added-with-conflict
+   "Added with conflict" :submission-added-with-conflict
    
    ;; Record not processed because submitted version: xxxxxxx is less or equal to previously submitted version (DOI match) 
-   "Record not processed because submitted version" :submission-version
+   "Record not processed because submitted version" :submission-version-older-than-last
    
    ;; User with ID: {0} cant submit into handle, please contact the CrossRef admin
-   "submit into handle" :permission
+   "submit into handle" :permission-not-your-handle
    
    ;; User not allowed to add records for prefix: {0}
-   "User not allowed to add records for prefix" :permission
+   "User not allowed to add records for prefix" :permission-not-your-prefix
    
    ;; All prefixes in a submission must match (DOI[{0}]) 
-   "All prefixes in a submission must match" :xml-structure
+   "All prefixes in a submission must match" :xml-content-differing-prefixes
    
    ;; year: {0} in not a valid integer
-   "in not a valid integer" :xml-content
+   "in not a valid integer" :xml-content-invalid-year
    
    ;; title "{title}" was previously deleted by a CrossRef admin
-   "was previously deleted by a CrossRef" :title-deleted-by-crossref-admin
+   "was previously deleted by a CrossRef" :submission-title-deleted-by-crossref-admin
    
    ;; user not allowed to add or update records for the title "{title}"
-   "user not allowed to add or update records for the title" :permission
+   "user not allowed to add or update records for the title" :permission-not-your-title
    
    ;; ISSN "12345678" has already been assigned to a different title/publisher/genre
-   "has already been assigned to a different" :permission
+   "has already been assigned to a different" :permission-not-your-issn
    
    ;; [error] :286:24:Invalid content starting with element {element name}'. The content must match '(("http://www.crossref.org/schema/4.3.0": item_number) {0-3}, ("http://www.crossref.org/schema/4.3.0": identifier) {0-10})
-   "Invalid content starting with element" :xml-error
+   "Invalid content starting with element" :xml-syntax-schema-validation-fail
    
    ;; org.jdom.input.JDOMParseException: Error on line 312 of document file:///export/home/resin/journals/crossref/inprocess/395032106: The content of elements must consist of well-formed character data or markup.
-   "JDOMParseException" :xml-error
+   "JDOMParseException" :xml-syntax-bad-character-data
    
    ;; [fatal error] :1:1: Content is not allowed in prolog.
-   "Content is not allowed in prolog" :xml-error
+   "Content is not allowed in prolog" :xml-syntax-content-in-prolog
    
    ;; java.io.UTFDataFormatException: invalid byte 1 of 1-byte > UTF-8 sequence (0x92) 
-   "UTFDataFormatException" :xml-error
+   "UTFDataFormatException" :xml-syntax-bad-character-encoding
    
    ;; java.sql.SQLException: ORA-00001: unique constraint (ATYPON.NDX1_CIT_RELS) violated
-   "ATYPON.NDX1_CIT_RELS" :unique-doi
+   "ATYPON.NDX1_CIT_RELS" :submission-unique-doi
    
    ;; java.lang.NullPointerException
-   "NullPointerException" :npe
+   "NullPointerException" :submission-npe
    
    ;; Submission version NULL is invalid 
-   "Submission version NULL is invalid" :xml-error})
+   "Submission version NULL is invalid" :xml-content-submission-version-is-null})
 
 (defn parse-int-or-zero
   "Parse an integer from a string or return zero if nil"
