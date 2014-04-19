@@ -19,7 +19,7 @@
                      :failed
                      :completed)
         query {:batch-id batch-id}
-        update {"$set" {:submission-log submission-log
+        update {"$set" {:submission submission-log
                         :status new-status}}]
     (mc/upsert :deposits query update)))
 
