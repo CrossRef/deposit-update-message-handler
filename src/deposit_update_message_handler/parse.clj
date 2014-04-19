@@ -63,7 +63,7 @@
   "Parse an integer from a string or return zero if nil"
   [s]
   (if (nil? s) 0
-   (Integer. (re-find  #"\d+" s ))))
+   (Integer. (re-find  #"\d+" s))))
 
 (defn status
   [input]
@@ -99,10 +99,10 @@
           zipped (zip/xml-zip x)
           submission-id (parse-int-or-zero (z/xml1-> zipped :submission_id z/text))
           batch-id (parse-int-or-zero (z/xml1-> zipped :batch_id z/text))
-          record-count (parse-int-or-zero(z/xml1-> zipped :batch_data :record_count z/text))
-          success-count (parse-int-or-zero(z/xml1-> zipped :batch_data :success_count z/text))
-          warning-count (parse-int-or-zero(z/xml1-> zipped :batch_data :warning_count z/text))
-          failure-count (parse-int-or-zero(z/xml1-> zipped :batch_data :failure_count z/text))
+          record-count (parse-int-or-zero (z/xml1-> zipped :batch_data :record_count z/text))
+          success-count (parse-int-or-zero (z/xml1-> zipped :batch_data :success_count z/text))
+          warning-count (parse-int-or-zero (z/xml1-> zipped :batch_data :warning_count z/text))
+          failure-count (parse-int-or-zero (z/xml1-> zipped :batch_data :failure_count z/text))
           records (z/xml-> zipped :record_diagnostic)
           records-info (map extract-record-info records)]
     {:submission-id submission-id

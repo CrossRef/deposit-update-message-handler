@@ -12,9 +12,16 @@
 
 (defn update-status 
   "Update an entry with the parsed submission log."
-  [batch-id status]
+  [batch-id submission-log]
   (info "Updating status for batch id", batch-id)
-  (mc/upsert :deposits {:batch-id batch-id} {"$set" {:submission-log status}}))
+  (let [new-status (if (or (zero? (:success-count submission-log))
+                           (not (zero? (:failure-count submission-log))))
+                     :failed
+                     :completed)
+        query {:batch-id batch-id}
+        update {"$set" {:submission-log submission-log
+                        :status new-status}}]
+    (mc/upsert :deposits query update)))
 
 
 
