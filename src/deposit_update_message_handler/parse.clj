@@ -88,7 +88,7 @@
   [record]
   (let [message (trim (z/xml1-> record :msg z/text))]
     {:status (status record) 
-     :doi (z/xml1-> record :doi z/text)
+     :related-doi (when-let [d (z/xml1-> record :doi z/text)] d)
      :message message
      :message-types (extract-types-from-message message)}))
 
@@ -97,8 +97,8 @@
   [input]
     (let [x (xml/parse (java.io.ByteArrayInputStream. (.getBytes input)))
           zipped (zip/xml-zip x)
-          submission-id (parse-int-or-zero (z/xml1-> zipped :submission_id z/text))
-          batch-id (parse-int-or-zero (z/xml1-> zipped :batch_id z/text))
+          submission-id (z/xml1-> zipped :submission_id z/text)
+          batch-id (z/xml1-> zipped :batch_id z/text)
           record-count (parse-int-or-zero (z/xml1-> zipped :batch_data :record_count z/text))
           success-count (parse-int-or-zero (z/xml1-> zipped :batch_data :success_count z/text))
           warning-count (parse-int-or-zero (z/xml1-> zipped :batch_data :warning_count z/text))
@@ -111,7 +111,7 @@
      :success-count success-count
      :warning-count warning-count
      :failure-count failure-count
-     :records records-info}))
+     :messages records-info}))
 
 (defn parse-xml-robust
   "Parse a message's XML content. Return nil on error. This can be passed any kind of message that might appear in the mail account's inbox."
