@@ -12,7 +12,7 @@
   "Fetch a batch of messages. Call callback with the string of each message body. If the callback returns true, delete the message."
    [callback]  
   (let [properties (Properties.)
-        url (URLName. "pop3" "mailserv.crossref.org" 110 "" (env :email-username) (env :email-password))
+        url (URLName. "pop3" (env :email-host) (env :email-port) "" (env :email-username) (env :email-password))
         session (Session/getInstance properties nil)
         store (POP3Store. session url)]
         (.connect store)

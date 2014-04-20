@@ -23,5 +23,3 @@
                         :status new-status}}]
     (mc/upsert :deposits query update)))
 
-
-
