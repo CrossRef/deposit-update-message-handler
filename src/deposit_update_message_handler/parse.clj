@@ -88,7 +88,7 @@
   [record]
   (let [message (trim (z/xml1-> record :msg z/text))]
     {:status (status record) 
-     :related-doi (when-let [d (z/xml1-> record :doi z/text)] d)
+     :related-doi (let [d (z/xml1-> record :doi z/text)] (when (not (empty? d)) d))
      :message message
      :message-types (extract-types-from-message message)}))
 
