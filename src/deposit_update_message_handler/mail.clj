@@ -2,7 +2,7 @@
     (:gen-class)
     (:import [javax.mail URLName Session Flags$Flag Flags Folder]
              [javax.mail.internet MimeMultipart]
-             [com.sun.mail.pop3 POP3Store]
+             [com.sun.mail.pop3 POP3SSLStore]
              [java.util Properties])
     (:require [clojure.tools.logging :refer [info error]]
               [environ.core :refer [env]]))
@@ -14,7 +14,7 @@
   (let [properties (Properties.)
         url (URLName. "pop3" (env :email-host) (Integer/parseInt (env :email-port)) "" (env :email-username) (env :email-password))
         session (Session/getInstance properties nil)
-        store (POP3Store. session url)]
+        store (POP3SSLStore. session url)]
         (.connect store)
         (info "Connected to mailbox")
         (let [folder (.getFolder store "INBOX")]
