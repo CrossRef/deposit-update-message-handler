@@ -18,6 +18,7 @@ or in production
 
 Here is a sample run script you can keep on the server
 
+	export MONGO_DB_HOST=localhost
     export MONGO_DB_NAME=crossref
     export EMAIL_USERNAME=labs-notifications
     export EMAIL_PASSWORD=...
@@ -28,6 +29,7 @@ Here is a sample run script you can keep on the server
 Options set using environment variables. In your lein profile file or `./.lein-env` include lein-environ plugin and set:
 
     :env {
+		:mongo-db-host "localhost"
         :mongo-db-name "crossref"
         :email-username "labs-notifications"
         :email-password ...              

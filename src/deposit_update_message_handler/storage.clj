@@ -7,7 +7,7 @@
             [clojure.tools.logging :refer [info error]]))
 
 (defn connect-mongo []
-  (mg/connect!)
+  (mg/connect! {:host (or (env :mongo-db-host) "localhost")})
   (mg/set-db! (mg/get-db (env :mongo-db-name))))
 
 (defn update-status 
