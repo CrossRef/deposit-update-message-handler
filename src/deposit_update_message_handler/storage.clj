@@ -14,7 +14,8 @@
   "Update an entry with the parsed submission log."
   [batch-id submission-log]
   (info "Updating status for batch id", batch-id)
-  (let [new-status (if (or (zero? (:success-count submission-log))
+  (let [new-status (if (or (zero? (+ (:success-count submission-log)
+                                     (:warning-count submission-log)))
                            (not (zero? (:failure-count submission-log))))
                      :failed
                      :completed)
